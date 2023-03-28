@@ -15,42 +15,55 @@ internal static class Utils
 	public static int ReadVariableLength(EndianBinaryReader r)
 	{
 		// 28 bits allowed
-		const int LIMIT = 4; // (varlen)0x7F_FF_FF_FF represents (uint)0x0F_FF_FF_FF
+		// (varlen)0x7F_FF_FF_FF represents (uint)0x0F_FF_FF_FF
 
-		uint value = 0;
-		byte curByte;
+		int value = r.ReadByte();
+		int numBytesRead = 1;
 
-		for (int shift = 0; shift < LIMIT * 7; shift += 7)
+		if ((value & 0x80) != 0)
 		{
-			curByte = r.ReadByte();
-			value |= (curByte & 0x7Fu) << shift;
+			value &= 0x7F;
 
-			if (curByte <= 0x7Fu)
+			while (true)
 			{
-				return (int)value;
+				if (numBytesRead >= 4)
+				{
+					throw new InvalidDataException("Variable length value was more than 28 bits");
+				}
+
+				byte curByte = r.ReadByte();
+				numBytesRead++;
+
+				value = (value << 7) + (curByte & 0x7F);
+				if ((curByte & 0x80) == 0)
+				{
+					break;
+				}
 			}
 		}
-		throw new InvalidDataException("Variable length value was more than 28 bits");
+
+		return value;
 	}
 	public static void WriteVariableLength(EndianBinaryWriter w, int value)
 	{
 		ValidateVariableLengthValue(value);
 
-		// value = 0x0F_FF_FF_FF
-		// WriteByte 0xFF
-		// value = 0x1F_FF_FF
-		// WriteByte 0xFF
-		// value = 0x3F_FF
-		// WriteByte 0xFF
-		// value = 0x7F
-		// WriteByte 0x7F
-
-		while (value > 0x7F)
+		int buffer = value & 0x7F;
+		while ((value >>= 7) > 0)
 		{
-			w.WriteByte((byte)(value | ~0x7Fu));
-			value >>= 7;
+			buffer <<= 8;
+			buffer |= 0x80;
+			buffer += value & 0x7F;
 		}
-		w.WriteByte((byte)value);
+		while (true)
+		{
+			w.WriteByte((byte)buffer);
+			if ((buffer & 0x80) == 0)
+			{
+				break;
+			}
+			buffer >>= 8;
+		}
 	}
 
 	public static void ValidateMIDIChannel(byte channel)

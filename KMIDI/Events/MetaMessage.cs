@@ -1,5 +1,6 @@
 ﻿using Kermalis.EndianBinaryIO;
 using System;
+using System.Text;
 
 namespace Kermalis.MIDI;
 
@@ -128,5 +129,10 @@ public sealed class MetaMessage : MIDIMessage
 		w.WriteEnum(Type);
 		Utils.WriteVariableLength(w, Data.Length);
 		w.WriteBytes(Data);
+	}
+
+	public override string ToString()
+	{
+		return string.Format("{0} [{1}: \"{2}\"]", nameof(MetaMessage), Type, Encoding.ASCII.GetString(Data));
 	}
 }

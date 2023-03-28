@@ -48,6 +48,8 @@ public sealed class MIDITrackChunk : MIDIChunk
 	}
 	private void ReadEvent(EndianBinaryReader r, ref int ticks, ref byte runningStatus, ref bool foundEnd, ref bool sysexContinue)
 	{
+		long startOffset = r.Stream.Position;
+
 		ticks += Utils.ReadVariableLength(r);
 
 		// Get command
@@ -114,7 +116,7 @@ public sealed class MIDITrackChunk : MIDIChunk
 		}
 		else
 		{
-			throw new InvalidDataException($"Unknown MIDI command found at 0x{r.Stream.Position - 1:X} (0x{cmd:X})");
+			throw new InvalidDataException($"Unknown MIDI command found at 0x{startOffset:X} (0x{cmd:X})");
 		}
 	}
 
