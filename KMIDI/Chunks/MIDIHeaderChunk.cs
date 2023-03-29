@@ -38,14 +38,13 @@ public sealed class MIDIHeaderChunk : MIDIChunk
 		long endOffset = GetEndOffset(r, size);
 
 		Format = r.ReadEnum<MIDIFormat>();
-		NumTracks = r.ReadUInt16();
-		TimeDivision = new TimeDivisionValue(r.ReadUInt16());
-
 		if (Format > MIDIFormat.Format2)
 		{
 			// Section 2.2 states that unknown formats should be supported
 			Debug.WriteLine($"Unknown MIDI format ({Format}), so behavior is unknown");
 		}
+
+		NumTracks = r.ReadUInt16();
 		if (NumTracks == 0)
 		{
 			throw new InvalidDataException("MIDI has no tracks");
@@ -54,6 +53,8 @@ public sealed class MIDIHeaderChunk : MIDIChunk
 		{
 			throw new InvalidDataException($"MIDI format 0 must have 1 track, but this MIDI has {NumTracks}");
 		}
+
+		TimeDivision = new TimeDivisionValue(r.ReadUInt16());
 		if (!TimeDivision.IsValid())
 		{
 			throw new InvalidDataException($"Invalid MIDI time division ({TimeDivision})");
@@ -80,5 +81,13 @@ public sealed class MIDIHeaderChunk : MIDIChunk
 		w.WriteEnum(Format);
 		w.WriteUInt16(NumTracks);
 		w.WriteUInt16(TimeDivision.RawValue);
+	}
+
+	public override string ToString()
+	{
+		return $"<{EXPECTED_NAME}>"
+			+ $"{Environment.NewLine}\t{nameof(Format)}: {Format}"
+			+ $"{Environment.NewLine}\t{nameof(NumTracks)}: {NumTracks}"
+			+ $"{Environment.NewLine}\t{nameof(TimeDivision)}: {TimeDivision}";
 	}
 }

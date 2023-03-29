@@ -41,4 +41,11 @@ public sealed class ChannelPressureMessage : MIDIMessage
 	{
 		w.WriteByte(Pressure);
 	}
+
+	public override string ToString()
+	{
+		return $"{nameof(ChannelPressureMessage)} [{nameof(Channel)} {Channel}"
+			+ $", {nameof(Pressure)}: {Pressure}"
+			+ ']';
+	}
 }

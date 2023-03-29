@@ -54,4 +54,12 @@ public sealed class ControllerMessage : MIDIMessage
 		w.WriteEnum(Controller);
 		w.WriteByte(Value);
 	}
+
+	public override string ToString()
+	{
+		return $"{nameof(ControllerMessage)} [{nameof(Channel)} {Channel}"
+			+ $", {nameof(Controller)}: {Controller}"
+			+ $", {nameof(Value)}: {Value}"
+			+ ']';
+	}
 }

@@ -109,7 +109,7 @@ public enum ControllerType : byte
 /// <summary>Used with <see cref="MetaMessage"/></summary>
 public enum MetaMessageType : byte
 {
-	SequenceNumber,
+	SequenceNumber, // TODO: Section 3.1 - Must occur at the beginning of the track before any non-zero deltatime
 	Text,
 	Copyright,
 	TrackName,
@@ -119,12 +119,54 @@ public enum MetaMessageType : byte
 	CuePoint,
 	ProgramName,
 	DeviceName,
+	/// <summary>Reserved for ASCII treatment</summary>
+	Reserved_A,
+	/// <summary>Reserved for ASCII treatment</summary>
+	Reserved_B,
+	/// <summary>Reserved for ASCII treatment</summary>
+	Reserved_C,
+	/// <summary>Reserved for ASCII treatment</summary>
+	Reserved_D,
+	/// <summary>Reserved for ASCII treatment</summary>
+	Reserved_E,
+	/// <summary>Reserved for ASCII treatment</summary>
+	Reserved_F,
+	MIDIChannelPrefix = 0x20,
+	/// <summary>Not optional</summary>
 	EndOfTrack = 0x2F,
 	Tempo = 0x51,
 	SMPTEOffset = 0x54,
 	TimeSignature = 0x58,
 	KeySignature,
 	ProprietaryEvent = 0x7F,
+	MAX,
+}
+/// <summary>Used with <see cref="MetaMessageType.KeySignature"/></summary>
+public enum KeySignatureSF : sbyte
+{
+	MIN = -8,
+	Flat_7 = -7,
+	Flat_6 = -6,
+	Flat_5 = -5,
+	Flat_4 = -4,
+	Flat_3 = -3,
+	Flat_2 = -2,
+	Flat_1 = -1,
+	KeyOfC = 0,
+	Sharp_1 = +1,
+	Sharp_2 = +2,
+	Sharp_3 = +3,
+	Sharp_4 = +4,
+	Sharp_5 = +5,
+	Sharp_6 = +6,
+	Sharp_7 = +7,
+	MAX = +8,
+}
+/// <summary>Used with <see cref="MetaMessageType.KeySignature"/></summary>
+public enum KeySignatureMI : byte
+{
+	MajorKey,
+	MinorKey,
 	MAX,
 }
 

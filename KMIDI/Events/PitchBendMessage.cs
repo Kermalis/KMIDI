@@ -54,4 +54,12 @@ public sealed class PitchBendMessage : MIDIMessage
 		w.WriteByte(LSB);
 		w.WriteByte(MSB);
 	}
+
+	public override string ToString()
+	{
+		return $"{nameof(PitchBendMessage)} [{nameof(Channel)} {Channel}"
+			+ $", {nameof(LSB)}: {LSB}"
+			+ $", {nameof(MSB)}: {MSB}"
+			+ ']';
+	}
 }

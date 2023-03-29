@@ -1,6 +1,7 @@
 ﻿using Kermalis.EndianBinaryIO;
 using System;
 using System.IO;
+using System.Text;
 
 namespace Kermalis.MIDI;
 
@@ -256,5 +257,22 @@ public sealed class MIDITrackChunk : MIDIChunk
 		}
 
 		msg.Write(w);
+	}
+
+	public override string ToString()
+	{
+		var str = new StringBuilder($"<{EXPECTED_NAME}>");
+		str.AppendLine();
+
+		str.AppendLine($"\t{nameof(NumEvents)}: {NumEvents}");
+		str.AppendLine($"\t{nameof(NumTicks)}: {NumTicks}");
+
+		for (MIDIEvent? e = First; e is not null; e = e.Next)
+		{
+			str.Append("\t\t");
+			str.AppendLine(e.ToString());
+		}
+
+		return str.ToString();
 	}
 }

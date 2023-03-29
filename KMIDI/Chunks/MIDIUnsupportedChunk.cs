@@ -1,4 +1,5 @@
 ﻿using Kermalis.EndianBinaryIO;
+using System;
 
 namespace Kermalis.MIDI;
 
@@ -10,6 +11,11 @@ public sealed class MIDIUnsupportedChunk : MIDIChunk
 
 	public MIDIUnsupportedChunk(string chunkName, byte[] data)
 	{
+		if (chunkName.Length != 4)
+		{
+			throw new ArgumentOutOfRangeException(nameof(chunkName), chunkName, null);
+		}
+
 		ChunkName = chunkName;
 		Data = data;
 	}
@@ -26,5 +32,10 @@ public sealed class MIDIUnsupportedChunk : MIDIChunk
 		w.WriteUInt32((uint)Data.Length);
 
 		w.WriteBytes(Data);
+	}
+
+	public override string ToString()
+	{
+		return $"<{ChunkName}> [{Data.Length} bytes]";
 	}
 }

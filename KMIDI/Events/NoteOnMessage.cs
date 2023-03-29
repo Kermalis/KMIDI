@@ -54,4 +54,12 @@ public sealed class NoteOnMessage : MIDIMessage
 		w.WriteEnum(Note);
 		w.WriteByte(Velocity);
 	}
+
+	public override string ToString()
+	{
+		return $"{nameof(NoteOnMessage)} [{nameof(Channel)} {Channel}"
+			+ $", {nameof(Note)}: {Note}"
+			+ $", {nameof(Velocity)}: {Velocity}"
+			+ ']';
+	}
 }

@@ -16,4 +16,9 @@ public sealed class MIDIEvent
 		Ticks = ticks;
 		Message = msg;
 	}
+
+	public override string ToString()
+	{
+		return string.Format("@{0} = {1}", Ticks, Message);
+	}
 }

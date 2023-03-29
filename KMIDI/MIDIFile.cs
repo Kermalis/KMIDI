@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace Kermalis.MIDI;
 
@@ -126,5 +127,16 @@ public sealed class MIDIFile
 		{
 			c.Write(w);
 		}
+	}
+
+	// Don't put this as "ToString()" since it can be slow
+	public string GetHierarchy()
+	{
+		var str = new StringBuilder();
+		foreach (MIDIChunk c in EnumerateChunks(true))
+		{
+			str.AppendLine(c.ToString());
+		}
+		return str.ToString();
 	}
 }

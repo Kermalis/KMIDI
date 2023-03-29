@@ -41,4 +41,11 @@ public sealed class ProgramChangeMessage : MIDIMessage
 	{
 		w.WriteEnum(Program);
 	}
+
+	public override string ToString()
+	{
+		return $"{nameof(ProgramChangeMessage)} [{nameof(Channel)} {Channel}"
+			+ $", {nameof(Program)}: {Program}"
+			+ ']';
+	}
 }

@@ -44,6 +44,11 @@ public readonly struct TimeDivisionValue
 
 	public override string ToString()
 	{
-		return string.Format("0x{0:X4}", RawValue);
+		switch (Type)
+		{
+			case TimeDivisionType.PPQN: return string.Format("PPQN [TicksPerQuarterNote: {0}]", PPQN_TicksPerQuarterNote);
+			case TimeDivisionType.SMPTE: return string.Format("SMPTE [Format: {0}, TicksPerFrame: {1}]", SMPTE_Format, SMPTE_TicksPerFrame);
+		}
+		return string.Format("INVALID [0x{0:X4}]", RawValue);
 	}
 }

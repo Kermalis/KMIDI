@@ -15,6 +15,10 @@ public sealed class PolyphonicPressureMessage : MIDIMessage
 		Channel = channel;
 
 		Note = r.ReadEnum<MIDINote>();
+		if (Note >= MIDINote.MAX)
+		{
+			Utils.ThrowInvalidMessageDataException(nameof(PolyphonicPressureMessage), nameof(Note), r.Stream.Position - 1, Note);
+		}
 
 		Pressure = r.ReadByte();
 		if (Pressure > 127)
@@ -45,5 +49,13 @@ public sealed class PolyphonicPressureMessage : MIDIMessage
 	{
 		w.WriteEnum(Note);
 		w.WriteByte(Pressure);
+	}
+
+	public override string ToString()
+	{
+		return $"{nameof(PolyphonicPressureMessage)} [{nameof(Channel)} {Channel}"
+			+ $", {nameof(Note)}: {Note}"
+			+ $", {nameof(Pressure)}: {Pressure}"
+			+ ']';
 	}
 }

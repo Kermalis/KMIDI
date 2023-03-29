@@ -41,4 +41,9 @@ public sealed class EscapeMessage : MIDIMessage
 		Utils.WriteVariableLength(w, Data.Length);
 		w.WriteBytes(Data);
 	}
+
+	public override string ToString()
+	{
+		return $"{nameof(EscapeMessage)} [Length: {Data.Length}]";
+	}
 }

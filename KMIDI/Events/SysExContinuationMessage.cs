@@ -44,4 +44,11 @@ public sealed class SysExContinuationMessage : MIDIMessage
 		Utils.WriteVariableLength(w, Data.Length);
 		w.WriteBytes(Data);
 	}
+
+	public override string ToString()
+	{
+		return $"{nameof(SysExContinuationMessage)} [Length: {Data.Length}"
+			+ $", {nameof(IsFinished)}: {IsFinished}"
+			+ ']';
+	}
 }
