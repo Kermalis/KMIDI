@@ -3,7 +3,7 @@ using System;
 
 namespace Kermalis.MIDI;
 
-public sealed class PitchBendMessage : MIDIMessage
+public sealed class PitchBendMessage : MIDIMessage, IMIDIChannelMessage
 {
 	public byte Channel { get; }
 
