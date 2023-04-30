@@ -122,7 +122,7 @@ public sealed class MIDITrackChunk : MIDIChunk
 	}
 
 	/// <summary>If there are other events at <paramref name="ticks"/>, <paramref name="msg"/> will be inserted after them.</summary>
-	public void InsertMessage(int ticks, MIDIMessage msg)
+	public MIDIEvent InsertMessage(int ticks, MIDIMessage msg)
 	{
 		if (ticks < 0)
 		{
@@ -166,6 +166,7 @@ public sealed class MIDITrackChunk : MIDIChunk
 		}
 
 		NumEvents++;
+		return e;
 	}
 
 	public override void Write(EndianBinaryWriter w)
