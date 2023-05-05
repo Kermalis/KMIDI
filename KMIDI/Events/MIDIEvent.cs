@@ -25,14 +25,12 @@ public sealed class MIDIEvent<T> : IMIDIEvent_Internal
 	internal IMIDIEvent_Internal IThis => this;
 
 	int IMIDIEvent_Internal.ITicks { get; set; }
+	public T Msg { get; set; }
 	IMIDIEvent_Internal? IMIDIEvent_Internal.IPrev { get; set; }
 	IMIDIEvent_Internal? IMIDIEvent_Internal.INext { get; set; }
 
 	public int Ticks => IThis.ITicks;
-
 	MIDIMessage IMIDIEvent.Msg => Msg;
-	public T Msg { get; set; }
-
 	public IMIDIEvent? Prev => IThis.IPrev;
 	public IMIDIEvent? Next => IThis.INext;
 
