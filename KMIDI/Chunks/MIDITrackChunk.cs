@@ -9,8 +9,11 @@ public sealed class MIDITrackChunk : MIDIChunk
 {
 	internal const string EXPECTED_NAME = "MTrk";
 
-	public MIDIEvent? First { get; private set; }
-	public MIDIEvent? Last { get; private set; }
+	private IMIDIEvent_Internal? _first;
+	private IMIDIEvent_Internal? _last;
+
+	public IMIDIEvent? First => _first;
+	public IMIDIEvent? Last => _last;
 
 	/// <summary>Includes the end of track event</summary>
 	public int NumEvents { get; private set; }
@@ -122,51 +125,111 @@ public sealed class MIDITrackChunk : MIDIChunk
 	}
 
 	/// <summary>If there are other events at <paramref name="ticks"/>, <paramref name="msg"/> will be inserted after them.</summary>
-	public MIDIEvent InsertMessage(int ticks, MIDIMessage msg)
+	public MIDIEvent<T> InsertMessage<T>(int ticks, T msg)
+		where T : MIDIMessage
 	{
 		if (ticks < 0)
 		{
 			throw new ArgumentOutOfRangeException(nameof(ticks), ticks, null);
 		}
 
-		var e = new MIDIEvent(ticks, msg);
+		var ret = new MIDIEvent<T>(ticks, msg);
+		IMIDIEvent_Internal e = ret.IThis;
 
 		if (NumEvents == 0)
 		{
-			First = e;
-			Last = e;
+			_first = e;
+			_last = e;
 		}
-		else if (ticks < First!.Ticks)
+		else if (ticks < _first!.Ticks)
 		{
-			e.Next = First;
-			First.Prev = e;
-			First = e;
+			e.INext = _first;
+			_first.IPrev = e;
+			_first = e;
 		}
-		else if (ticks >= Last!.Ticks)
+		else if (ticks >= _last!.Ticks)
 		{
-			e.Prev = Last;
-			Last.Next = e;
-			Last = e;
+			e.IPrev = _last;
+			_last.INext = e;
+			_last = e;
 		}
 		else // Somewhere between
 		{
-			MIDIEvent next = First;
+			IMIDIEvent_Internal next = _first;
 
 			while (next.Ticks <= ticks)
 			{
-				next = next.Next!;
+				next = next.INext!;
 			}
 
-			MIDIEvent prev = next.Prev!;
+			IMIDIEvent_Internal prev = next.IPrev!;
 
-			e.Next = next;
-			e.Prev = prev;
-			prev.Next = e;
-			next.Prev = e;
+			e.INext = next;
+			e.IPrev = prev;
+			prev.INext = e;
+			next.IPrev = e;
 		}
 
 		NumEvents++;
-		return e;
+		return ret;
+	}
+	public bool RemoveEvent(IMIDIEvent ev)
+	{
+		if (ev is not IMIDIEvent_Internal e)
+		{
+			return false;
+		}
+		if (NumEvents == 0)
+		{
+			return false;
+		}
+
+		IMIDIEvent_Internal first = _first!;
+		IMIDIEvent_Internal last = _last!;
+		if (NumEvents == 1)
+		{
+			if (e == first && e == last)
+			{
+				_first = null;
+				_last = null;
+				NumEvents = 0;
+				return true;
+			}
+			// If it wasn't the only event, then it's not in this track
+			return false;
+		}
+
+		// Below here, we have at least 2 events
+		if (e == first)
+		{
+			_first = e.INext!;
+			_first.IPrev = null;
+			NumEvents--;
+			return true;
+		}
+		if (e == last)
+		{
+			_last = e.IPrev!;
+			_last.INext = null;
+			NumEvents--;
+			return true;
+		}
+
+		// Either e is not in this track, or it's in the range (first, last)
+		for (IMIDIEvent_Internal i = first.INext!; i != last; i = i.INext!)
+		{
+			if (e == i)
+			{
+				IMIDIEvent_Internal prev = e.IPrev!;
+				IMIDIEvent_Internal next = e.INext!;
+				prev.INext = next;
+				next.IPrev = prev;
+				NumEvents--;
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public override void Write(EndianBinaryWriter w)
@@ -179,7 +242,7 @@ public sealed class MIDITrackChunk : MIDIChunk
 		byte runningStatus = 0;
 		bool foundEnd = false;
 		bool sysexContinue = false;
-		for (MIDIEvent? e = First; e is not null; e = e.Next)
+		for (IMIDIEvent? e = _first; e is not null; e = e.Next)
 		{
 			if (foundEnd)
 			{
@@ -201,11 +264,11 @@ public sealed class MIDITrackChunk : MIDIChunk
 
 		w.Stream.Position = endOffset; // Go back to the end
 	}
-	private static void WriteEvent(EndianBinaryWriter w, MIDIEvent e, ref byte runningStatus, ref bool foundEnd, ref bool sysexContinue)
+	private static void WriteEvent(EndianBinaryWriter w, IMIDIEvent e, ref byte runningStatus, ref bool foundEnd, ref bool sysexContinue)
 	{
 		Utils.WriteVariableLength(w, e.DeltaTicks);
 
-		MIDIMessage msg = e.Message;
+		MIDIMessage msg = e.Msg;
 		byte cmd = msg.GetCMDByte();
 		if (sysexContinue && cmd != 0xF7)
 		{
@@ -268,7 +331,7 @@ public sealed class MIDITrackChunk : MIDIChunk
 		str.AppendLine($"\t{nameof(NumEvents)}: {NumEvents}");
 		str.AppendLine($"\t{nameof(NumTicks)}: {NumTicks}");
 
-		for (MIDIEvent? e = First; e is not null; e = e.Next)
+		for (IMIDIEvent? e = _first; e is not null; e = e.Next)
 		{
 			str.Append("\t\t");
 			str.AppendLine(e.ToString());
