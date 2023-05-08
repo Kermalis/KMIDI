@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Kermalis.MIDI;
 
-public sealed class SysExContinuationMessage : MIDIMessage
+public sealed class SysExContinuationMessage : MIDIMessage, ISysExMessage
 {
 	public byte[] Data { get; }
 
