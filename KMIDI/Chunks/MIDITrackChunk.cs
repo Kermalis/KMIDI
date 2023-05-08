@@ -9,8 +9,8 @@ public sealed class MIDITrackChunk : MIDIChunk
 {
 	internal const string EXPECTED_NAME = "MTrk";
 
-	private IMIDIEvent_Internal? _first;
-	private IMIDIEvent_Internal? _last;
+	private MIDIEvent? _first;
+	private MIDIEvent? _last;
 
 	public IMIDIEvent? First => _first;
 	public IMIDIEvent? Last => _last;
@@ -124,8 +124,27 @@ public sealed class MIDITrackChunk : MIDIChunk
 		}
 	}
 
+	/// <summary><inheritdoc cref="InsertMessage{T}(int, T)"/></summary>
+	public IMIDIEvent InsertMessage(int ticks, MIDIMessage msg)
+	{
+		if (ticks < 0)
+		{
+			throw new ArgumentOutOfRangeException(nameof(ticks), ticks, null);
+		}
+
+		// We always want to be able to cast to IMIDIEvent<T> where T is a non-abstract MIDIMessage
+		Type tType = msg.GetType();
+		Type eType = typeof(MIDIEvent<>).MakeGenericType(tType);
+		object?[] constructorParams = new object?[] { ticks, Convert.ChangeType(msg, tType) };
+		if (Activator.CreateInstance(eType, constructorParams) is not MIDIEvent e)
+		{
+			throw new Exception();
+		}
+		InsertMessage_Private(ticks, e);
+		return e;
+	}
 	/// <summary>If there are other events at <paramref name="ticks"/>, <paramref name="msg"/> will be inserted after them.</summary>
-	public MIDIEvent<T> InsertMessage<T>(int ticks, T msg)
+	public IMIDIEvent<T> InsertMessage<T>(int ticks, T msg)
 		where T : MIDIMessage
 	{
 		if (ticks < 0)
@@ -133,9 +152,12 @@ public sealed class MIDITrackChunk : MIDIChunk
 			throw new ArgumentOutOfRangeException(nameof(ticks), ticks, null);
 		}
 
-		var ret = new MIDIEvent<T>(ticks, msg);
-		IMIDIEvent_Internal e = ret.IThis;
-
+		var e = new MIDIEvent<T>(ticks, msg);
+		InsertMessage_Private(ticks, e);
+		return e;
+	}
+	private void InsertMessage_Private(int ticks, MIDIEvent e)
+	{
 		if (NumEvents == 0)
 		{
 			_first = e;
@@ -155,14 +177,14 @@ public sealed class MIDITrackChunk : MIDIChunk
 		}
 		else // Somewhere between
 		{
-			IMIDIEvent_Internal next = _first;
+			MIDIEvent next = _first;
 
 			while (next.Ticks <= ticks)
 			{
 				next = next.INext!;
 			}
 
-			IMIDIEvent_Internal prev = next.IPrev!;
+			MIDIEvent prev = next.IPrev!;
 
 			e.INext = next;
 			e.IPrev = prev;
@@ -171,11 +193,11 @@ public sealed class MIDITrackChunk : MIDIChunk
 		}
 
 		NumEvents++;
-		return ret;
 	}
+
 	public bool RemoveEvent(IMIDIEvent ev)
 	{
-		if (ev is not IMIDIEvent_Internal e)
+		if (ev is not MIDIEvent e)
 		{
 			return false;
 		}
@@ -184,8 +206,8 @@ public sealed class MIDITrackChunk : MIDIChunk
 			return false;
 		}
 
-		IMIDIEvent_Internal first = _first!;
-		IMIDIEvent_Internal last = _last!;
+		MIDIEvent first = _first!;
+		MIDIEvent last = _last!;
 		if (NumEvents == 1)
 		{
 			if (e == first && e == last)
@@ -216,12 +238,12 @@ public sealed class MIDITrackChunk : MIDIChunk
 		}
 
 		// Either e is not in this track, or it's in the range (first, last)
-		for (IMIDIEvent_Internal i = first.INext!; i != last; i = i.INext!)
+		for (MIDIEvent i = first.INext!; i != last; i = i.INext!)
 		{
 			if (e == i)
 			{
-				IMIDIEvent_Internal prev = e.IPrev!;
-				IMIDIEvent_Internal next = e.INext!;
+				MIDIEvent prev = e.IPrev!;
+				MIDIEvent next = e.INext!;
 				prev.INext = next;
 				next.IPrev = prev;
 				NumEvents--;
