@@ -18,6 +18,21 @@
 		<Version>1.0.0</Version>
 		<RepositoryUrl>https://github.com/Kermalis/KMIDI</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
+		<Description>This .NET library allows you to simply read and write MIDI files.
+There is no functionality for playing or listening to MIDIs, so it's purely for handling the file data itself.
+You can even add custom chunks to the MIDI file!
+You can read MIDIs and then edit them slightly before saving them again.
+
+It handles all MIDI formats because it tries to adhere to the MIDI specification.
+The specification isn't fully respected because some invalid MIDIs are not detected at the moment.
+However, the library will catch most invalid MIDIs!
+
+Project URL and Samples ― https://github.com/Kermalis/KMIDI</Description>
+		<PackageProjectUrl>https://github.com/Kermalis/KMIDI</PackageProjectUrl>
+		<NeutralLanguage>en-001</NeutralLanguage>
+		<PackageTags>MIDI;EndianBinaryIO</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -36,5 +51,16 @@
 		<DebugType>full</DebugType>
 		<DebugSymbols>true</DebugSymbols>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\LICENSE.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>
